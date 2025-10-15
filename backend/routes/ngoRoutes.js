@@ -1,16 +1,23 @@
 // routes/ngoRoutes.js
 
 const express = require('express');
-const { registerNgo } = require('../controllers/ngoController');
-const { protect } = require('../middleware/auth'); // Import the middleware
+const {
+    registerNgo,
+    getAllPublicNgos,
+    createNgoAdmin,
+} = require('../controllers/ngoController');
+const { protect, authorize } = require('../middleware/auth'); // Import authorize
 
 const router = express.Router();
 router.get('/public', getAllPublicNgos);
 
-// Any route defined here is prefixed with /api/ngos
 
-// We apply the 'protect' middleware to this route.
-// A user must be logged in to access it.
-router.post('/register', protect, registerNgo);
+// Protected routes (require login)
+router.use(protect);
+
+router.post('/register', registerNgo); // For a user to register their own NGO
+
+// Protected admin route (requires 'admin' role)
+router.post('/admins', authorize('admin'), createNgoAdmin);
 
 module.exports = router;
