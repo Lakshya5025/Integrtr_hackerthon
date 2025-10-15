@@ -1,123 +1,89 @@
-// src/pages/NgoRegisterPage.jsx
-import React, { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+// src/pages/AdminDashboardPage.jsx
+import React, { useState, useEffect } from "react";
+import api from "../api/api";
+import CreateJobForm from "../components/CreateJobForm"; // Import
+import CreateAdminForm from "../components/CreateAdminForm"; // Import
+import JobCard from "../components/JobCard"; // Import JobCard
 
-const NgoRegisterPage = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [causes, setCauses] = useState("");
-  const [location, setLocation] = useState("");
-  const [message, setMessage] = useState(""); // To show success message
-  const { registerNgo, loading, error } = useAuth();
+const AdminDashboardPage = () => {
+  const [jobs, setJobs] = useState([]);
+  const [applications, setApplications] = useState({}); // Store applications by jobId
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    if (password !== confirmPassword) {
-      return alert("Passwords do not match");
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const jobsRes = await api.get("/jobs"); // The protected route for admin's jobs
+        setJobs(jobsRes.data.data);
+      } catch (error) {
+        console.error("Failed to fetch admin data", error);
+      }
+    };
+    fetchAdminData();
+  }, []);
+
+  const fetchApplications = async (jobId) => {
+    // If already fetched, don't fetch again
+    if (applications[jobId]) return;
+
+    try {
+      const res = await api.get(`/applications/${jobId}`);
+      setApplications((prev) => ({ ...prev, [jobId]: res.data.data }));
+    } catch (error) {
+      console.error(`Failed to fetch applications for job ${jobId}`, error);
     }
-    const response = await registerNgo(name, email, password, causes, location);
-    if (response && response.success) {
-      setMessage(
-        "Registration successful! Please check your email to verify your account."
-      );
-    }
+  };
+  const handleJobCreated = (newJob) => {
+    setJobs((prevJobs) => [newJob, ...prevJobs]);
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center">Register Your NGO</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {message && (
-            <p className="text-green-500 bg-green-100 p-3 rounded">{message}</p>
-          )}
-          {error && (
-            <p className="text-red-500 bg-red-100 p-3 rounded">{error}</p>
-          )}
-          <div>
-            <label className="block text-sm font-medium">NGO Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md"
-            />
+    <div className="container mx-auto p-8">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Left Column: Job Management */}
+        <div>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-semibold mb-4">Your Job Postings</h2>
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {jobs.map((job) => (
+                <div key={job._id} className="border-b pb-4">
+                  <JobCard job={job} />
+                  <button
+                    onClick={() => fetchApplications(job._id)}
+                    className="mt-2 text-sm text-blue-600 hover:underline">
+                    View Applications
+                  </button>
+                  {applications[job._id] && (
+                    <div className="mt-2 text-sm">
+                      <h4 className="font-semibold">Applications:</h4>
+                      {applications[job._id].length > 0 ? (
+                        <ul>
+                          {applications[job._id].map((app) => (
+                            <li key={app._id}>
+                              {app.applicant.name} - {app.applicant.email}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p>No applications yet.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">
-              Causes (comma-separated)
-            </label>
-            <input
-              type="text"
-              value={causes}
-              onChange={(e) => setCauses(e.target.value)}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Location</label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              required
-              className="w-full px-3 py-2 mt-1 border rounded-md"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full px-4 py-2 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-300">
-            {loading ? "Registering..." : "Register"}
-          </button>
-        </form>
-        <p className="text-sm text-center">
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
-            Log In
-          </Link>
-        </p>
+        </div>
+
+        {/* Right Column: Admin Tools */}
+        <div>
+          <CreateJobForm onJobCreated={handleJobCreated} />
+          <CreateAdminForm />
+        </div>
       </div>
     </div>
   );
 };
 
-export default NgoRegisterPage;
+export default AdminDashboardPage;

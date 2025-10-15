@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -24,7 +23,7 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['volunteer, admin'], // For now, only 'volunteer'. We will add 'admin' later.
+        enum: ['volunteer', 'admin'], // Corrected this line
         default: 'volunteer',
     },
     ngo: { // Add this field to link a user to their NGO
