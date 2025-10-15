@@ -41,3 +41,31 @@ exports.registerNgo = async (req, res, next) => {
         res.status(500).send('Server Error');
     }
 };
+
+exports.getAllPublicNgos = async (req, res, next) => {
+    try {
+        const { location, causes } = req.query;
+        const query = {};
+
+        if (location) {
+            // Use a case-insensitive regex for partial matching
+            query.location = new RegExp(location, 'i');
+        }
+
+        if (causes) {
+            // The 'causes' query parameter could be a single value or comma-separated
+            query.causes = { $in: causes.split(',') };
+        }
+
+        const ngos = await Ngo.find(query).populate('founder', 'name'); // Populate founder's name
+
+        res.status(200).json({
+            success: true,
+            count: ngos.length,
+            data: ngos,
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
