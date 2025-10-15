@@ -5,6 +5,7 @@ const { registerNgo } = require('../controllers/ngoController');
 const { protect } = require('../middleware/auth'); // Import the middleware
 
 const router = express.Router();
+router.get('/public', getAllPublicNgos);
 
 // Any route defined here is prefixed with /api/ngos
 
