@@ -1,4 +1,3 @@
-// controllers/userController.js
 
 const crypto = require('crypto');
 const User = require('../models/User');
@@ -81,6 +80,44 @@ exports.verifyEmail = async (req, res, next) => {
         await user.save();
 
         res.status(200).json({ success: true, data: 'Email verified successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.login = async (req, res, next) => {
+    const { email, password } = req.body;
+
+    // Validate email & password
+    if (!email || !password) {
+        return res.status(400).json({ success: false, msg: 'Please provide an email and password' });
+    }
+
+    try {
+        // Check for user
+        const user = await User.findOne({ email }).select('+password');
+
+        if (!user) {
+            return res.status(401).json({ success: false, msg: 'Invalid credentials' });
+        }
+
+        // Check if email is verified
+        if (!user.isVerified) {
+            return res.status(401).json({ success: false, msg: 'Please verify your email to log in' });
+        }
+
+        // Check if password matches
+        const isMatch = await user.matchPassword(password);
+
+        if (!isMatch) {
+            return res.status(401).json({ success: false, msg: 'Invalid credentials' });
+        }
+
+        // Create token and send response
+        const token = user.getSignedJwtToken();
+        res.status(200).json({ success: true, token });
+
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
