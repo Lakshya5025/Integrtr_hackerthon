@@ -16,10 +16,11 @@ const app = express();
 app.use(express.json());
 
 // Enable CORS
-app.use(cors({
-    origin: "http://localhost:5173/",
-    methods: ['get', 'put', 'patch', 'post', 'delete']
-}));
+app.use(cors(
+    {
+        origin: "http://localhost:5173",
+        methods: ['get', 'put', 'patch', 'post', 'delete']
+    }));
 
 // Simple route for testing
 app.get('/', (req, res) => {
@@ -30,6 +31,6 @@ app.use('/api/ngos', require('./routes/ngoRoutes')); // Add this line
 app.use('/api/jobs', require('./routes/jobRoutes')); // Add this line
 app.use('/api/applications', require('./routes/applicationRoutes')); // Add this line
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
