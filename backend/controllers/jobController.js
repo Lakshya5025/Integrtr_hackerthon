@@ -112,3 +112,21 @@ exports.getAllPublicJobs = async (req, res, next) => {
         res.status(500).send('Server Error');
     }
 };
+
+// @desc    Get a single public job
+// @route   GET /api/jobs/public/:id
+// @access  Public
+exports.getPublicJobById = async (req, res, next) => {
+    try {
+        const job = await Job.findById(req.params.id).populate('ngo', 'name email location');
+
+        if (!job) {
+            return res.status(404).json({ success: false, msg: `Job not found with id of ${req.params.id}` });
+        }
+
+        res.status(200).json({ success: true, data: job });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};

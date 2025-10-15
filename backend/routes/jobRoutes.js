@@ -2,6 +2,7 @@
 const express = require('express');
 const {
     getAllPublicJobs,
+    getPublicJobById,
     getJobsForMyNgo,
     createJob,
     updateJob,
@@ -26,5 +27,6 @@ router.route('/')
 router.route('/:id')
     .put(updateJob)
     .delete(deleteJob);
+router.get('/public/:id', getPublicJobById); // Add this new route
 
 module.exports = router;

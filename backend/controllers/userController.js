@@ -123,3 +123,12 @@ exports.login = async (req, res, next) => {
         res.status(500).send('Server Error');
     }
 };
+exports.getMe = async (req, res, next) => {
+    // req.user is set by the 'protect' middleware
+    const user = await User.findById(req.user.id);
+
+    res.status(200).json({
+        success: true,
+        data: user
+    });
+};

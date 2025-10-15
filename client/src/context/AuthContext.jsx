@@ -8,17 +8,25 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
   useEffect(() => {
-    if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      // Here you would typically fetch user data with the token
-      // For now, we'll just assume the token is valid.
-      // A future step could be adding a /api/users/me route
-    }
+    const fetchUser = async () => {
+      if (token) {
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        try {
+          const res = await api.get("/users/me");
+          setUser(res.data.data); // Set the user object
+        } catch (err) {
+          // Handle invalid token case
+          console.error("Invalid token, logging out.");
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+    fetchUser();
   }, [token]);
 
   const login = async (email, password) => {
@@ -66,11 +74,12 @@ export const AuthProvider = ({ children }) => {
     delete api.defaults.headers.common["Authorization"];
     navigate("/login");
   };
+  const isAdmin = user?.role === "admin";
 
   return (
     <AuthContext.Provider
-      value={{ token, user, login, register, logout, loading, error }}>
-      {children}
+      value={{ token, user, isAdmin, login, register, logout, loading, error }}>
+      {!loading && children} {/* Render children only when not loading */}
     </AuthContext.Provider>
   );
 };
