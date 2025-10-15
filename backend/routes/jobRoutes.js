@@ -18,7 +18,7 @@ router.get('/public', getAllPublicJobs);
 
 // --- Protected Admin Routes Below ---
 router.use(protect);
-router.use(authorize('admin'));
+// router.use(authorize('admin'));
 
 router.route('/')
     .get(getJobsForMyNgo)

@@ -12,16 +12,7 @@ const NgoSchema = new mongoose.Schema({
     causes: {
         type: [String],
         required: [true, 'Please add at least one cause'],
-        enum: [ // You can expand this list
-            'Education',
-            'Health',
-            'Environment',
-            'Animal Welfare',
-            'Human Rights',
-            'Disaster Relief',
-            'Poverty Alleviation',
-            'Other'
-        ],
+
     },
     location: {
         // For now, we'll keep it simple. We can enhance this later with GeoJSON.

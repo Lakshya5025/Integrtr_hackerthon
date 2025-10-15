@@ -70,7 +70,7 @@ exports.registerNgo = async (req, res, next) => {
             });
         } catch (err) {
             console.error(err);
-            user.verificationToken = undefined;
+            user.verificationToken = undefined; // Reset token
             await user.save({ validateBeforeSave: false });
             return res.status(500).json({ success: false, msg: 'Email could not be sent' });
         }
