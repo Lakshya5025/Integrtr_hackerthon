@@ -67,6 +67,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const registerNgo = async (name, email, password, causes, location) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.post("/ngos/register", {
+        name,
+        email,
+        password,
+        causes: causes.split(",").map((cause) => cause.trim()),
+        location,
+      });
+      return response.data; // Return the success message to the component
+    } catch (err) {
+      setError(
+        err.response?.data?.msg || "NGO Registration failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setToken(null);
@@ -78,7 +99,17 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, isAdmin, login, register, logout, loading, error }}>
+      value={{
+        token,
+        user,
+        isAdmin,
+        login,
+        register,
+        registerNgo,
+        logout,
+        loading,
+        error,
+      }}>
       {!loading && children} {/* Render children only when not loading */}
     </AuthContext.Provider>
   );

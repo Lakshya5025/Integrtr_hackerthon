@@ -1,46 +1,105 @@
 // controllers/ngoController.js
-
+const axios = require('axios');
 const Ngo = require('../models/Ngo');
 const User = require('../models/User');
-const bcrypt = require('bcryptjs'); // Make sure bcryptjs is imported
-const sendEmail = require('../utils/sendEmail'); // Make sure sendEmail is imported
+const bcrypt = require('bcryptjs');
+const sendEmail = require('../utils/sendEmail');
+const crypto = require('crypto');
 
 // @desc    Register an NGO
 // @route   POST /api/ngos/register
-// @access  Private (requires login)
+// @access  Public
 exports.registerNgo = async (req, res, next) => {
-    const { name, causes, location } = req.body;
-    const user = req.user; // We get this from the 'protect' middleware
+    const { name, causes, location, email, password } = req.body;
 
     try {
-        // Check if user has already registered an NGO
-        if (user.role === 'admin' && user.ngo) {
-            return res.status(400).json({ success: false, msg: 'User has already registered an NGO' });
+        let ngo = await Ngo.findOne({ email });
+        if (ngo) {
+            return res.status(400).json({ success: false, msg: 'NGO already exists' });
         }
 
-        // Create the NGO
-        const ngo = await Ngo.create({
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ success: false, msg: 'User with this email already exists' });
+        }
+
+        const verificationToken = crypto.randomBytes(20).toString('hex');
+
+        user = new User({
+            name,
+            email,
+            password,
+            role: 'admin',
+            verificationToken,
+        });
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        await user.save();
+
+
+        ngo = await Ngo.create({
             name,
             causes,
             location,
-            email: user.email, // Use the registering user's email for the NGO
+            email,
             founder: user.id,
-            admins: [user.id], // The founder is the first admin
+            admins: [user.id],
         });
 
-        // Update the user's role to 'admin' and link to the new NGO
-        await User.findByIdAndUpdate(user.id, { role: 'admin', ngo: ngo._id });
+        user.ngo = ngo._id;
+        await user.save();
 
-        res.status(201).json({
-            success: true,
-            data: ngo,
-        });
+
+        const verificationUrl = `${req.protocol}://${req.get(
+            'host'
+        )}/api/users/verifyemail/${verificationToken}`;
+
+        const message = `You are receiving this email because you have registered an NGO on our platform. Please click on the following link, or paste it into your browser to complete the process: \n\n ${verificationUrl}`;
+
+        try {
+            await sendEmail({
+                email: user.email,
+                subject: 'Email Verification',
+                message,
+            });
+
+            res.status(200).json({
+                success: true,
+                data: 'Email sent. Please verify your account.',
+            });
+        } catch (err) {
+            console.error(err);
+            user.verificationToken = undefined;
+            await user.save({ validateBeforeSave: false });
+            return res.status(500).json({ success: false, msg: 'Email could not be sent' });
+        }
     } catch (err) {
         console.error(err.message);
-        if (err.code === 11000) { // Handles duplicate name or email for NGO
+        if (err.code === 11000) {
             return res.status(400).json({ success: false, msg: 'An NGO with that name or email already exists' });
         }
         res.status(500).send('Server Error');
+    }
+};
+
+// @desc    Get all public NGOs from data.gov.in
+// @route   GET /api/ngos/public-gov
+// @access  Public
+exports.getGovernmentNgos = async (req, res, next) => {
+    try {
+        const apiKey = '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b';
+        const apiUrl = `https://api.data.gov.in/resource/9a528656-0599-4652-9e43-7f72b53b5113?api-key=${apiKey}&format=json&limit=1000`;
+
+        const response = await axios.get(apiUrl);
+
+        res.status(200).json({
+            success: true,
+            data: response.data.records,
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ success: false, msg: 'Server Error: Could not fetch public NGOs' });
     }
 };
 
@@ -50,16 +109,14 @@ exports.getAllPublicNgos = async (req, res, next) => {
         const query = {};
 
         if (location) {
-            // Use a case-insensitive regex for partial matching
             query.location = new RegExp(location, 'i');
         }
 
         if (causes) {
-            // The 'causes' query parameter could be a single value or comma-separated
             query.causes = { $in: causes.split(',') };
         }
 
-        const ngos = await Ngo.find(query).populate('founder', 'name'); // Populate founder's name
+        const ngos = await Ngo.find(query).populate('founder', 'name');
 
         res.status(200).json({
             success: true,
@@ -71,39 +128,35 @@ exports.getAllPublicNgos = async (req, res, next) => {
         res.status(500).send('Server Error');
     }
 };
+
 exports.createNgoAdmin = async (req, res, next) => {
     const { name, email, password } = req.body;
     const creatorAdmin = req.user;
 
     try {
-        // 1. Check if the email is already in use
         let existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ success: false, msg: 'Email is already registered' });
         }
 
-        // 2. Hash the provided password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 3. Create the new user
         const newUser = await User.create({
             name,
             email,
             password: hashedPassword,
             role: 'admin',
-            ngo: creatorAdmin.ngo, // Associate with the same NGO
-            isVerified: true, // Mark as verified since they are created by a trusted admin
+            ngo: creatorAdmin.ngo,
+            isVerified: true,
         });
 
-        // 4. Add the new admin's ID to the NGO's admin list
         await Ngo.findByIdAndUpdate(
             creatorAdmin.ngo,
             { $push: { admins: newUser._id } },
             { new: true, runValidators: true }
         );
 
-        // 5. Send a welcome email to the new admin
         const message = `Hello ${name},\n\nYou have been added as an admin for your NGO on the Volunteer Portal. Your temporary password is: ${password}\n\nPlease log in and consider changing your password.\n\nThank you!`;
 
         try {
@@ -119,7 +172,6 @@ exports.createNgoAdmin = async (req, res, next) => {
             });
         } catch (emailErr) {
             console.error(emailErr);
-            // Even if email fails, the user is created. We can inform the client.
             res.status(201).json({
                 success: true,
                 data: { name: newUser.name, email: newUser.email, role: newUser.role },

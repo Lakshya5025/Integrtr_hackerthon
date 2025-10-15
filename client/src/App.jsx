@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import Navbar from "./components/Navbar";
 import JobDetailsPage from "./pages/JobDetailsPage"; // Import the new page
+import NgoRegisterPage from "./pages/NgoRegisterPage"; // Import the new page
 
 import AdminRoute from "./components/AdminRoute"; // Import the guard
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -20,6 +21,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register-ngo" element={<NgoRegisterPage />} />
           <Route path="/jobs/:id" element={<JobDetailsPage />} />
 
           {/* Protected Admin Routes */}

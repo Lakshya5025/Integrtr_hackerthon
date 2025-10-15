@@ -4,18 +4,19 @@ const express = require('express');
 const {
     registerNgo,
     getAllPublicNgos,
+    getGovernmentNgos, // Import the new controller
     createNgoAdmin,
 } = require('../controllers/ngoController');
 const { protect, authorize } = require('../middleware/auth'); // Import authorize
 
 const router = express.Router();
+router.post('/register', registerNgo);
 router.get('/public', getAllPublicNgos);
+router.get('/public-gov', getGovernmentNgos); // Add the new route
 
 
 // Protected routes (require login)
 router.use(protect);
-
-router.post('/register', registerNgo); // For a user to register their own NGO
 
 // Protected admin route (requires 'admin' role)
 router.post('/admins', authorize('admin'), createNgoAdmin);

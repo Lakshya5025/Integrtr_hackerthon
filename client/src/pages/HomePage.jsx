@@ -6,6 +6,7 @@ import JobCard from "../components/JobCard";
 
 const HomePage = () => {
   const [ngos, setNgos] = useState([]);
+  const [publicNgos, setPublicNgos] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -24,12 +25,14 @@ const HomePage = () => {
         if (locationFilter) params.append("location", locationFilter);
         if (jobTypeFilter) params.append("jobType", jobTypeFilter);
 
-        const [ngosRes, jobsRes] = await Promise.all([
+        const [ngosRes, jobsRes, publicNgosRes] = await Promise.all([
           api.get("/ngos/public"), // For now, we fetch all NGOs
           api.get(`/jobs/public?${params.toString()}`),
+          api.get("/ngos/public-gov"), // Fetch government NGOs via our backend proxy
         ]);
         setNgos(ngosRes.data.data);
         setJobs(jobsRes.data.data);
+        setPublicNgos(publicNgosRes.data.data);
       } catch (err) {
         setError("Failed to fetch data. Please try again later.");
       } finally {
@@ -96,6 +99,16 @@ const HomePage = () => {
           <div className="space-y-6">
             {ngos.map((ngo) => (
               <NgoCard key={ngo._id} ngo={ngo} />
+            ))}
+            {publicNgos.map((ngo, index) => (
+              <NgoCard
+                key={`${ngo.id}-${index}`}
+                ngo={{
+                  name: ngo.ngo_name,
+                  location: ngo.city,
+                  causes: [ngo.major_activities_achievements],
+                }}
+              />
             ))}
           </div>
         </section>
