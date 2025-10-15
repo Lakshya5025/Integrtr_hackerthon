@@ -24,6 +24,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', router);
 app.use('/api/ngos', require('./routes/ngoRoutes')); // Add this line
 app.use('/api/jobs', require('./routes/jobRoutes')); // Add this line
+app.use('/api/applications', require('./routes/applicationRoutes')); // Add this line
 
 const PORT = process.env.PORT || 5000;
 
