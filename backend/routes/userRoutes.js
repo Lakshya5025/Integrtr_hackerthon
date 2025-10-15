@@ -1,14 +1,16 @@
-// routes/userRoutes.js
-
 const express = require('express');
-const { register, verifyEmail, login } = require('../controllers/userController');
-const { protect } = require('../middleware/auth'); // Make sure to import protect
+// Import 'getMe' from the controller
+const { register, verifyEmail, login, getMe } = require('../controllers/userController');
+// Make sure to import the 'protect' middleware
+const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
 router.post('/register', register);
 router.get('/verifyemail/:token', verifyEmail);
-router.post('/login', login); // Add this new route
-router.get('/me', protect, getMe); // Add this line before module.exports
+router.post('/login', login);
+
+// This route will now work because 'getMe' is imported
+router.get('/me', protect, getMe);
 
 module.exports = router;

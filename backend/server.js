@@ -4,6 +4,7 @@ require('dotenv').config();
 const cors = require('cors');
 const connectDB = require('./config/db');
 const router = require("./routes/userRoutes")
+
 // Load env vars
 
 // Connect to database
@@ -15,7 +16,10 @@ const app = express();
 app.use(express.json());
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173/",
+    methods: ['get', 'put', 'patch', 'post', 'delete']
+}));
 
 // Simple route for testing
 app.get('/', (req, res) => {
