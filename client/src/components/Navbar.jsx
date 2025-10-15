@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { token, logout } = useAuth();
+  const { token, logout, isAdmin } = useAuth();
 
   return (
     <nav className="bg-white shadow-md">
@@ -14,11 +14,20 @@ const Navbar = () => {
         </Link>
         <div>
           {token ? (
-            <button
-              onClick={logout}
-              className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">
-              Logout
-            </button>
+            <div className="flex items-center gap-4">
+              {isAdmin && (
+                <Link
+                  to="/admin/dashboard"
+                  className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+                  Admin Dashboard
+                </Link>
+              )}
+              <button
+                onClick={logout}
+                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600">
+                Logout
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-4">
               <Link to="/login" className="text-gray-800 hover:text-blue-600">

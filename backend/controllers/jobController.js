@@ -5,8 +5,11 @@ const Job = require('../models/Job');
 // @desc    Get all jobs for the logged-in admin's NGO
 // @route   GET /api/jobs
 // @access  Private (Admin)
+// backend/controllers/jobController.js
 exports.getJobsForMyNgo = async (req, res, next) => {
     try {
+        // This line is the key: It only finds jobs where the 'ngo' field
+        // matches the logged-in admin's NGO ID.
         const jobs = await Job.find({ ngo: req.user.ngo });
         res.status(200).json({ success: true, count: jobs.length, data: jobs });
     } catch (err) {
