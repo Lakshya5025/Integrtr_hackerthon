@@ -24,8 +24,13 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['volunteer'], // For now, only 'volunteer'. We will add 'admin' later.
+        enum: ['volunteer, admin'], // For now, only 'volunteer'. We will add 'admin' later.
         default: 'volunteer',
+    },
+    ngo: { // Add this field to link a user to their NGO
+        type: mongoose.Schema.ObjectId,
+        ref: 'Ngo',
+        default: null
     },
     isVerified: {
         type: Boolean,
