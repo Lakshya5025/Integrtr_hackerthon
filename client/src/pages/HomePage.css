@@ -1,0 +1,156 @@
+/* src/pages/HomePage.css */
+
+.hero-section {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px;
+  overflow: hidden;
+  background-color: #333;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* 50% transparent black */
+  z-index: 2;
+}
+
+.hero-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* --- Removed filter: The overlay handles the darkening now --- */
+  z-index: 1;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3; /* --- Changed z-index: Must be higher than the overlay --- */
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  padding: 0 2rem;
+}
+
+/* ... The rest of the file is the same ... */
+
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.hero-content p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.hero-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.hero-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.causes-section {
+  padding: 5rem 2rem;
+  text-align: center;
+  background-image: linear-gradient(135deg, #f0f2f5 0%, #e0e6ed 100%); /* A subtle, light gradient */
+}
+
+.causes-header {
+  max-width: 600px;
+  margin: 0 auto 3rem auto;
+}
+
+.causes-header h2 {
+  font-size: 2.5rem;
+  color: #212529;
+  margin-bottom: 1rem;
+}
+
+.causes-header .subtitle {
+  font-size: 1.1rem;
+  color: #6c757d;
+  line-height: 1.6;
+}
+
+.causes-container {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem; /* Increased gap */
+  flex-wrap: wrap;
+}
+
+/* --- Redesigned Cause Card --- */
+.cause-card {
+  background-color: #ffffff;
+  border-radius: 16px; /* Softer, more modern radius */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  padding: 2.5rem;
+  text-align: center;
+  flex: 1; /* Allow cards to grow */
+  min-width: 280px;
+  max-width: 320px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cause-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* --- New Styled Icon Wrapper --- */
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto; /* Center the icon */
+}
+
+/* Custom background and icon colors */
+.icon-wrapper.health {
+  background-color: #fdeeee;
+  color: #e94560;
+}
+.icon-wrapper.education {
+  background-color: #fff8e1;
+  color: #f8b400;
+}
+.icon-wrapper.environment {
+  background-color: #eaf6ea;
+  color: #5cb85c;
+}
+
+.cause-card h3 {
+  font-size: 1.6rem;
+  color: #343a40;
+  margin-bottom: 1rem;
+}
+
+.cause-card p {
+  color: #6c757d;
+  font-size: 1rem;
+  line-height: 1.7;
+}
